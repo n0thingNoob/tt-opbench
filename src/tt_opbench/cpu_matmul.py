@@ -179,13 +179,34 @@ def write_result(result: dict[str, Any], output_dir: Path) -> Path:
     return output_path
 
 
+def print_summary(result: dict[str, Any], output_path: Path) -> None:
+    case = result["case"]
+    correctness = result["correctness"]
+    timing = result["timing"]
+    baseline = timing["baseline"]
+    variant = timing["variant"]
+    speedup = baseline["mean_ms"] / variant["mean_ms"]
+
+    print("TT-OpBench result")
+    print("-----------------")
+    print(f"case:        {case['name']} m={case['m']} n={case['n']} k={case['k']} dtype={case['dtype']}")
+    print(f"baseline:    {result['baseline']['name']} ({result['baseline']['runtime']})")
+    print(f"variant:     {result['variant']['name']} ({result['variant']['runtime']})")
+    print(f"correctness: {'pass' if correctness['passed'] else 'fail'}")
+    print(f"max error:   {correctness['max_abs_error']:.6g}")
+    print(
+        f"timing:      baseline={baseline['mean_ms']:.6f} ms, "
+        f"variant={variant['mean_ms']:.6f} ms, speedup={speedup:.3f}x"
+    )
+    print(f"protocol:    warmup={timing['protocol']['warmup']} repeat={timing['protocol']['repeat']}")
+    print(f"result:      {output_path}")
+
+
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     result = build_result(args)
     output_path = write_result(result, args.output_dir)
-    print(f"Wrote result: {output_path}")
-    print(f"Correctness passed: {result['correctness']['passed']}")
-    print(f"Variant mean ms: {result['timing']['variant']['mean_ms']:.6f}")
+    print_summary(result, output_path)
     return 0 if result["correctness"]["passed"] else 1
 
 

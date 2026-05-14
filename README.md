@@ -61,6 +61,8 @@ PYTHONPATH=src /home/yijia/tt-metal/python_env/bin/python -m tt_opbench.ttnn_mat
 This compares a CPU Torch baseline against `ttnn.matmul` on device `0` and writes a JSON result.
 The TT-NN device section runs from `/tmp/tt-opbench-ttnn-work` so TT-Metal generated inspector files do not land in the repo.
 
+The command prints a short experiment summary with the case, baseline, variant, correctness, quick timing, timing protocol, and JSON result path.
+
 ## Performance Workflow
 
 Use TT-OpBench timing as a quick signal only:

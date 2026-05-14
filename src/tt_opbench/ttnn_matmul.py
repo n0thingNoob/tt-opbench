@@ -233,14 +233,37 @@ def write_result(result: dict[str, Any], output_dir: Path) -> Path:
     return output_path
 
 
+def print_summary(result: dict[str, Any], output_path: Path) -> None:
+    case = result["case"]
+    correctness = result["correctness"]
+    timing = result["timing"]
+    variant = timing["variant"]
+
+    print("TT-OpBench result")
+    print("-----------------")
+    print(
+        f"case:        {case['name']} m={case['m']} n={case['n']} k={case['k']} "
+        f"input_dtype={case['input_dtype']} ttnn_dtype={case['ttnn_dtype']}"
+    )
+    print(f"baseline:    {result['baseline']['name']} ({result['baseline']['runtime']})")
+    print(f"variant:     {result['variant']['name']} ({result['variant']['runtime']})")
+    print(f"device:      {result['runtime']['kind']} device_id={result['runtime']['device_id']}")
+    print(f"correctness: {'pass' if correctness['passed'] else 'fail'}")
+    print(f"max error:   {correctness['max_abs_error']:.6g}")
+    print(f"timing:      variant={variant['mean_ms']:.6f} ms")
+    print(
+        f"protocol:    warmup={timing['protocol']['warmup']} repeat={timing['protocol']['repeat']} "
+        "sync=yes transfers=excluded"
+    )
+    print(f"result:      {output_path}")
+
+
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     args.output_dir = args.output_dir.resolve()
     result = build_result(args)
     output_path = write_result(result, args.output_dir)
-    print(f"Wrote result: {output_path}")
-    print(f"Correctness passed: {result['correctness']['passed']}")
-    print(f"TT-NN variant mean ms: {result['timing']['variant']['mean_ms']:.6f}")
+    print_summary(result, output_path)
     return 0 if result["correctness"]["passed"] else 1
 
 
